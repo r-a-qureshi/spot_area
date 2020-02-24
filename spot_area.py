@@ -6,6 +6,7 @@ from collections import OrderedDict
 import argparse
 from os.path import isfile
 
+# Prepare to accept command line arguments
 parser = argparse.ArgumentParser(
     description="""Process microscope excel files to calculate area per cell"""\
         """ and return an output excel file. Output excel file should be in a"""\
@@ -23,7 +24,7 @@ parser.add_argument(
 )
 
 def spot_area(files,output_file):
-    """Takes a list of files or a glob compatible path string and iterates over
+    """Takes a list of files or path string and iterates over
     all sheets in all files to calculate the area per cell
     
     Args:
@@ -34,7 +35,10 @@ def spot_area(files,output_file):
         TypeError: When the files argument is supplied with the wrong data type
     """
     if type(files) == str:
-        files = glob(files+'/**/*.xlsx',recursive=True)
+        if files.endswith('xlsx'):
+            files = [files]
+        else:
+            files = glob(files+'/**/*.xlsx',recursive=True)
     elif type(files) == list:
         pass
     else:
@@ -49,7 +53,11 @@ def spot_area(files,output_file):
         path=PureWindowsPath(file)
         # assign the file name to be the experiment name
         experiment = path.stem
-        sheets = [i for i in xl.sheet_names if not i.startswith('Sheet')]
+        sheets = pd.Series(xl.sheet_names)
+        # filter out sheets that contain sheet or summary
+        sheets = sheets.loc[
+            ~sheets.str.contains('(sheet|summary)',case=False)
+        ].tolist()
         for sheet in sheets:
             df = xl.parse(sheet)
             # get rid of non-ascii characters in column name
