@@ -148,7 +148,7 @@ def spot_area(files,output_file):
         data.to_excel(output_file,index=False)
     return(data)
 
-if __name__ == "__main__":
+def main():
     args = parser.parse_args()
     # handle flags relating to glob usage for file searching
     # This allows the user to search for files using glob directly
