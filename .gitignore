@@ -1,3 +1,4 @@
 /data
 *.xlsx
 /env
+*__pycache__

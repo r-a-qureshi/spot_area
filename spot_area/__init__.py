@@ -1,1 +1,1 @@
-from spot_area import spot_area
+from spot_area.spot_area import *
