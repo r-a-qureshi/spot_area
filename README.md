@@ -2,7 +2,7 @@
 
 ## Motivation
 This project is a command line utility for processing excel files output by the Nikon NIS Elements AR Software. 
-The software can be used to detect the number of cells in an image, and measure the area of the region of interest for the cell.
+The software can be used to detect the number of cells in a microscopy image, and measure the area of the region of interest for the cell.
 The goal of this project is to provide an easy way to process these excel files and output an excel file with the
 average area per cell for each experiment.
 
