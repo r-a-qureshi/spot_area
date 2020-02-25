@@ -39,7 +39,7 @@ First make sure that you have the python 3 installed on your windows machine. Yo
 
 After you have installed python you can install spot_area by opening a command window and typing:
 ```
-pip install git+git://github.com/r-a-qureshi/spot_area
+pip install https://github.com/r-a-qureshi/spot_area/archive/master.zip
 ```
 
 ### Usage
