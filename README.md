@@ -2,7 +2,7 @@
 
 ## Motivation
 This project is a command line utility for processing excel files output by the Nikon NIS Elements AR Software. 
-The software can be used to detect the number of cells in an image, and measure the area of each cell.
+The software can be used to detect the number of cells in an image, and measure the area of the region of interest for the cell.
 The goal of this project is to provide an easy way to process these excel files and output an excel file with the
 average area per cell for each experiment.
 
@@ -19,7 +19,7 @@ Sheets from input excel files from the Nikon software typically take the form:
 
 
 The goal is to take the sum of the values of BinaryArea across rows where the BinaryID is "Threshold" and divide
-by the sum of the alues of NumberObjects where BinaryID is "SpotDetection (GFP)." This will calulate the average
+by the sum of the values of NumberObjects where BinaryID is "SpotDetection (GFP)." This will calculate the average
 area per cell for that particular experimental condition. spot_area will iterate over sheets across multiple files
 and calculate the value for each sheet. spot_area will also attempt to parse the Source field to obtain a SubjectID and 
 two treatment conditions. If the source cannot be parsed these fields will be filled with "NA." 
@@ -72,6 +72,12 @@ optional arguments:
   ```
   spot_area -i 'mypath/data_files/' -o 'output_path/my_output_file.xlsx'
   ```
+
+  To run spot_area on a single file instead of a folder you can specify the exact path to the desired file as input
+  ```
+  spot_area -i 'mypath/data_files/single_file.xlsx' -o 'output_path/single_file_output_file.xlsx'
+  ```
+
   This will create a file in the output_path called my_output_file.xlsx that conforms to the output table above.
   The glob and recursive flags will signal to use glob to find the files specified by the input_path string.
 
