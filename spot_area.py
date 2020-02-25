@@ -5,6 +5,7 @@ import re
 from collections import OrderedDict
 import argparse
 from os.path import isfile
+import warnings
 
 # Prepare to accept command line arguments
 parser = argparse.ArgumentParser(
@@ -85,8 +86,9 @@ def spot_area(files,output_file):
             if required_cols.isin(df.columns).all():
                 pass
             else:
-                print(
-                    f'WARNING: Could not parse {sheet} in {file}. Skipping sheet.'
+                warnings.warn(
+                    f'Could not parse {sheet} in {file}. Skipping sheet.',
+                    UserWarning,
                 )
                 continue
             # omit the blank lines
@@ -100,8 +102,9 @@ def spot_area(files,output_file):
                     source_expr.match(filtered_source).groupdict()
                 )
             except:
-                print(
-                    f'WARNING: Unable to extract information from source pattern: {source}'
+                warnings.warn(
+                    f'Unable to extract information from source pattern: {source}',
+                    UserWarning
                 )
                 parsed_source = OrderedDict(
                     [('SubjectID','NA'),('Treat1','NA'),('Treat2','NA')]
@@ -122,7 +125,7 @@ def spot_area(files,output_file):
                 ('Experiment',experiment),
                 ('SheetName',sheet),
                 *parsed_source.items(),
-                ('Source',df['Source'].iloc[0]),
+                ('Source',source),
                 ('TotalArea',total_area),
                 ('TotalObjects',num_objects),
                 ('AreaPerCell',area_per_cell),
