@@ -7,36 +7,6 @@ import argparse
 from os.path import isfile
 import warnings
 
-# Prepare to accept command line arguments
-parser = argparse.ArgumentParser(
-    description="""Process microscope excel files to calculate area per"""\
-        """ cell and return an output excel file. Output excel file should"""\
-        """ be in a different directory than the input files."""
-)
-parser.add_argument(
-    '-i', 
-    '--input_path',
-    help='File path where excel files are located, can be folder or'\
-        ' individual file'
-)
-parser.add_argument(
-    '-o',
-    '--output_file',
-    help='File path to output excel file'
-)
-parser.add_argument(
-    '-g',
-    '--glob',
-    action='store_true',
-    help='Use glob to find files specified by input_path'
-)
-parser.add_argument(
-    '-r',
-    '--recursive',
-    action='store_true',
-    help='Perform glob search recursively'
-)
-
 def spot_area(files,output_file):
     """Takes a list of files or path string and iterates over
     all sheets in all files to calculate the area per cell
@@ -149,6 +119,37 @@ def spot_area(files,output_file):
     return(data)
 
 def main():
+    """Command Line Script"""
+    # Prepare to accept command line arguments
+    parser = argparse.ArgumentParser(
+        description="""Process microscope excel files to calculate area per"""\
+            """ cell and return an output excel file. Output excel file should"""\
+            """ be in a different directory than the input files."""
+    )
+    parser.add_argument(
+        '-i', 
+        '--input_path',
+        help='File path where excel files are located, can be folder or'\
+            ' individual file'
+    )
+    parser.add_argument(
+        '-o',
+        '--output_file',
+        help='File path to output excel file'
+    )
+    parser.add_argument(
+        '-g',
+        '--glob',
+        action='store_true',
+        help='Use glob to find files specified by input_path'
+    )
+    parser.add_argument(
+        '-r',
+        '--recursive',
+        action='store_true',
+        help='Perform glob search recursively'
+    )
+
     args = parser.parse_args()
     # handle flags relating to glob usage for file searching
     # This allows the user to search for files using glob directly
