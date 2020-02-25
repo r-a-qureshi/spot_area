@@ -14,6 +14,6 @@ setup(
     packages=find_packages(),
     install_requires=requirements,
     entry_points={"console_scripts":["spot_area = spot_area.spot_area:main"]},
-    keywords="Nikon microscopy cell spot area"
+    keywords="Nikon microscopy cell spot area",
     zip_safe=False,
 )
