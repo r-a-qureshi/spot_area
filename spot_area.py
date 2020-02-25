@@ -8,19 +8,32 @@ from os.path import isfile
 
 # Prepare to accept command line arguments
 parser = argparse.ArgumentParser(
-    description="""Process microscope excel files to calculate area per cell"""\
-        """ and return an output excel file. Output excel file should be in a"""\
-        """ different directory than the input files."""
+    description="""Process microscope excel files to calculate area per"""\
+        """ cell and return an output excel file. Output excel file should"""\
+        """ be in a different directory than the input files."""
 )
 parser.add_argument(
     '-i', 
     '--input_path',
-    help='file path where excel files are located'
+    help='File path where excel files are located, can be folder or'\
+        ' individual file'
 )
 parser.add_argument(
     '-o',
     '--output_file',
-    help='file path to output excel file'
+    help='File path to output excel file'
+)
+parser.add_argument(
+    '-g',
+    '--glob',
+    action='store_true',
+    help='Use glob to find files specified by input_path'
+)
+parser.add_argument(
+    '-r',
+    '--recursive',
+    action='store_true',
+    help='Perform glob search recursively'
 )
 
 def spot_area(files,output_file):
@@ -28,11 +41,15 @@ def spot_area(files,output_file):
     all sheets in all files to calculate the area per cell
     
     Args:
-        files (list,str): list of file paths or glob compatible file path string
+        files (list|str): list of file paths or glob compatible file path string
         output_file (str): output excel file path
     
     Raises:
         TypeError: When the files argument is supplied with the wrong data type
+        RunTimeError: When calculations are not performed for any input
+        FileExistsError: When output file already exists
+        
+    >>> experiment_data = spot_area('PATH_TO_FILES','path/my_output_file.xlsx')
     """
     if type(files) == str:
         if files.endswith('xlsx'):
@@ -54,22 +71,34 @@ def spot_area(files,output_file):
         # assign the file name to be the experiment name
         experiment = path.stem
         sheets = pd.Series(xl.sheet_names)
-        # filter out sheets that contain sheet or summary
-        sheets = sheets.loc[
-            ~sheets.str.contains('(sheet|summary)',case=False)
-        ].tolist()
         for sheet in sheets:
             df = xl.parse(sheet)
             # get rid of non-ascii characters in column name
-            df.rename(columns=lambda x: re.sub(r'\s*\[.*\]',r'',x),inplace=True)
+            df.rename(
+                columns=lambda x: re.sub(r'\s*\[.*\]',r'',x),
+                inplace=True,
+            )
+            # check if the sheet has the correct columns
+            required_cols = pd.Series(
+                ['Source','BinaryID','NumberObjects','BinaryArea']
+            )
+            if required_cols.isin(df.columns).all():
+                pass
+            else:
+                print(
+                    f'WARNING: Could not parse {sheet} in {file}. Skipping sheet.'
+                )
+                continue
             # omit the blank lines
             df.dropna(how='all',inplace=True)
-            # handle different human source pattern by forcing it to match mouse
-            df['Source'] = df['Source'].str.replace('Set \d+ \-','')
             # attempt to parse the source field
             source = df['Source'].iloc[0]
+            # handle different human source pattern by forcing it to match mouse
+            filtered_source = re.sub(r'Set \d+ \-','',source)
             try:
-                parsed_source = OrderedDict(source_expr.match(source).groupdict())
+                parsed_source = OrderedDict(
+                    source_expr.match(filtered_source).groupdict()
+                )
             except:
                 print(
                     f'WARNING: Unable to extract information from source pattern: {source}'
@@ -77,7 +106,6 @@ def spot_area(files,output_file):
                 parsed_source = OrderedDict(
                     [('SubjectID','NA'),('Treat1','NA'),('Treat2','NA')]
                 )
-
 
             # perform computations
             total_area = df.loc[
@@ -91,21 +119,27 @@ def spot_area(files,output_file):
             area_per_cell = total_area/num_objects
             # store results of processing a sheet in an OrderedDict
             expt_result = OrderedDict([
-                ("Experiment",experiment),
-                ("SheetName",sheet),
+                ('Experiment',experiment),
+                ('SheetName',sheet),
                 *parsed_source.items(),
-                ("Source",df['Source'].iloc[0]),
+                ('Source',df['Source'].iloc[0]),
                 ('TotalArea',total_area),
                 ('TotalObjects',num_objects),
-                ("AreaPerCell",area_per_cell),
+                ('AreaPerCell',area_per_cell),
             ])
             data.append(expt_result)
+    # check to make sure an output was successfully produced
+    if data == []:
+        raise RuntimeError(
+            'Failed to parse any of the sheets in the input files, or failed'\
+                ' to detect any input files.'
+        )
     # convert list of OrderedDicts to pandas dataframe
     data = pd.DataFrame(data)
     # export to excel
     if isfile(output_file):
         raise FileExistsError(
-            "The output file already exists. Choose a new filename"
+            "The output file already exists. Choose a new filename."
         )
     else:
         data.to_excel(output_file,index=False)
@@ -113,7 +147,13 @@ def spot_area(files,output_file):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    data = spot_area(args.input_path,args.output_file)
+    # handle flags relating to glob usage for file searching
+    # This allows the user to search for files using glob directly
+    if args.glob:
+        files = glob(args.input_path,recursive=args.recursive)
+        data = spot_area(files,args.output_file)
+    else:
+        data = spot_area(args.input_path,args.output_file)
     print(
         f'Successfully created output {args.output_file}'
     )
