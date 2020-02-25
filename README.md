@@ -34,7 +34,7 @@ spot_area uses the file name as the name of the experiment. spot_area produces a
 
 ## Documentation
 ### Installation
-First make sure that you have the python 3 installed on your windows machine. You can download it 
+First make sure that you have python 3 installed on your windows machine. You can download it 
 [here](https://www.python.org/downloads/windows/). When you install python make sure you check the box "Add python to path."
 
 After you have installed python you can install spot_area by opening a command window and typing:
